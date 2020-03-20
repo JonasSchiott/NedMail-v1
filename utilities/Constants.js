@@ -50,6 +50,12 @@ module.exports = {
 		RECEIVED: "Thank you for your message! Hang tight, support responders will reply to you as soon as possible!",
 		BLOCKED: "Whoops, looks like your blocked from sending mail.",
 		RESPONDER: "Mail responders cannot send mail.",
-		CREATION_RETRY: "Something went wrong while redirecting your message to staff."
+		RETRY_OVERLOAD: "Something went wrong while redirecting your message to staff."
+	},
+
+	THREAD_STATUS: {
+		OPEN: 1,
+		CLOSED: 2,
+		SUSPENDED: 3
 	}
 };

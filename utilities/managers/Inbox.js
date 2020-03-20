@@ -1,7 +1,8 @@
 const Mail = require("./Mail");
 const Sender = require("./Sender");
-const { MESSAGES, COLORS } = require("@utils/Constants");
+const { MESSAGES, COLORS, THREAD_STATUS } = require("@utils/Constants");
 const { cleanName } = require("@utils/Functions");
+const { TextChannel } = require("discord.js");
 const { KlasaUser, KlasaMessage } = require("klasa");
 const moment = require("moment");
 
@@ -12,37 +13,89 @@ module.exports = class Inbox extends Mail {
 	 */
 	constructor(user, message) {
 		super(user.client, user);
+		this.sender = new Sender(user);
 		this.content = this.formatContent(message);
-		this.sender = new Sender(this.client.user, user);
+		this.dbContent = {
+			string: this.content,
+			content: message.content,
+			attachments: message.attachments.map((x) => x.url),
+			createdAt: message.createdAt
+		};
 	}
 
 	/**
 	 * Manages the incoming message
 	 * @param {string} content
 	 */
-	receive(content) {
-		console.log(content);
+	async receive(content = this.dbContent, tries = 1) {
+		if (tries > 3) {
+			return this.sender.sendRetryOverload();
+		}
+
+		const thread = this.findOpenThread(this.user.id) || (await this.createThread());
+		const threadChannel = this.findOpenThreadChannel(thread ? thread.id : null);
+		let retry = false;
+
+		if (threadChannel) {
+			await this.send(content.string, threadChannel);
+			thread.messages.push(content);
+		} else if (thread) {
+			retry = true;
+			thread.state = THREAD_STATUS.CLOSED;
+			thread.channelID = null;
+		}
+
+		const threads = this.guild.settings.mail.threads.filter((x) => x.id !== thread.id);
+		const update = await this.guild.settings.update("mail.threads", [...threads, thread], {
+			action: "overwrite",
+			force: true
+		});
+		if (retry) return await this.receive(content, ++tries);
+		return update;
+	}
+
+	/**
+	 *
+	 * @param {string} content
+	 * @param {TextChannel} threadChannel
+	 */
+	async send(content, threadChannel) {
+		return await threadChannel.send(this.generateMessage(this.user, content));
+	}
+
+	async createThread() {
+		const threadChannel = await this.createThreadChannel();
+		if (threadChannel) {
+			const thread = {
+				id: this.nextMailID,
+				state: THREAD_STATUS.OPEN,
+				user: this.user.id,
+				channelID: threadChannel.id,
+				messages: []
+			};
+			await this.sender.sendReceived();
+			await this.guild.settings.update("mail.threads", thread, { action: "add" });
+			return this.findOpenThread(thread.id);
+		}
 	}
 
 	async createThreadChannel(tries = 1) {
 		if (tries > 3) {
-			this.sender.send(MESSAGES.CREATION_RETRY.COLORS);
-			return null;
+			return this.sender.sendRetryOverload;
 		}
 
 		try {
 			const mailID = this.nextMailID;
 			const channel = await this.inbox.channels.create(cleanName(this.user.tag), {
-				topic: `Mail thread created for **${this.user.tag}** with reference ID ${mailID}`,
+				topic: `Mail thread created for **${this.user.tag}** with reference ID **${mailID}**.`,
 				parent: this.pendingParent,
-				reason: `Created new mail thread for ${user.username}`
+				reason: `Created new mail thread for ${this.user.tag}.`
 			});
-
-			await this.sender.send(MESSAGES.RECEIVED);
 			await channel.send(this.generateHeader(mailID));
-			await this.guild.settings.update("mail.id", 1, { action: "add" });
+			this.guild.settings.update("mail.id", mailID);
 			return channel;
-		} catch {
+		} catch (e) {
+			console.log(e);
 			return await this.createThreadChannel(++tries);
 		}
 	}

@@ -1,4 +1,4 @@
-const { GUILDS, CHANNELS, ROLES, COLORS, MESSAGES } = require("@utils/Constants");
+const { GUILDS, CHANNELS, ROLES, COLORS, MESSAGES, THREAD_STATUS } = require("@utils/Constants");
 const { KlasaClient, KlasaUser, KlasaMessage } = require("klasa");
 const { GuildMember, Util } = require("discord.js");
 
@@ -15,14 +15,13 @@ module.exports = class Mail {
 		this.inbox = client.guilds.cache.get(GUILDS.INBOX);
 		this.member = this.guild.members.cache.get(user.id);
 	}
-
 	/**
 	 * @param {GuildMember} member
 	 * @returns {boolean} Whether the member has permission to respond to mail
 	 */
 	isResponder(user = this.user) {
 		const member = this.inbox.members.cache.get(user.id);
-		const responder = this.guild.settings.get("mail.responders").includes(user.id);
+		const responder = this.guild.settings.mail.responders.includes(user.id);
 		return responder || (this.responderRole && member && member.roles.cache.has(this.responderRole.id));
 	}
 
@@ -31,23 +30,7 @@ module.exports = class Mail {
 	 * @returns Whether the member is blocked from sending mail
 	 */
 	isBlocked(user = this.user) {
-		return user.settings.get("blocked");
-	}
-
-	/**
-	 * Sends a message saying they're blocked from sending mail
-	 * @param {KlasaUser} user
-	 */
-	async sendBlocked(user = this.user) {
-		return await user.send(this.generateMessage(this.client.user, MESSAGES.BLOCKED, COLORS.RED)).catch(() => {});
-	}
-
-	/**
-	 * Sends a message saying they're a mail responder
-	 * @param {KlasaUser} user
-	 */
-	async sendResponder(user = this.user) {
-		return await user.send(this.generateMessage(this.client.user, MESSAGES.RESPONDER, COLORS.RED)).catch(() => {});
+		return user.settings.blocked;
 	}
 
 	/**
@@ -74,11 +57,33 @@ module.exports = class Mail {
 	formatContent(message) {
 		const attachments = message.attachments.map((x) => `[${x.name}](${x.url})`);
 		const content = Util.escapeMarkdown(message.content);
-		return content + (attachments.length ? `\n\n__Attachments:__\n${attachments.join("\n")}` : "") || "Unknown message";
+		return (
+			(content ? `${content}\n\n` : "") + (attachments.length ? `__Attachments__\n${attachments.join("\n")}` : "") ||
+			"Unknown message"
+		);
+	}
+
+	/**
+	 * Finds an open thread from a channelID, userID or mailID
+	 * @param {string|number} id
+	 */
+	findOpenThread(id) {
+		return this.guild.settings.mail.threads.filter(
+			(x) => [x.id, x.channelID, x.user].includes(id) && x.state === THREAD_STATUS.OPEN
+		)[0];
+	}
+
+	/**
+	 * Finds an open thread channel from a channelID, userID or mailID
+	 * @param {string|number} id
+	 */
+	findOpenThreadChannel(id) {
+		const thread = this.findOpenThread(id) || {};
+		return this.inbox.channels.cache.get(thread.channelID);
 	}
 
 	get nextMailID() {
-		return this.guild.settings.get("mail.id");
+		return this.guild.settings.mail.id + 1;
 	}
 
 	get responderRole() {
@@ -86,26 +91,26 @@ module.exports = class Mail {
 	}
 
 	get mailAudit() {
-		return this.inbox.roles.cache.get(CHANNELS.MAIL_AUDIT);
+		return this.inbox.channels.cache.get(CHANNELS.MAIL_AUDIT);
 	}
 
 	get actionAudit() {
-		return this.inbox.roles.cache.get(CHANNELS.ACTION_AUDIT);
+		return this.inbox.channels.cache.get(CHANNELS.ACTION_AUDIT);
 	}
 
 	get transcriptAudit() {
-		return this.inbox.roles.cache.get(CHANNELS.TRANSCRIPT_AUDIT);
+		return this.inbox.channels.cache.get(CHANNELS.TRANSCRIPT_AUDIT);
 	}
 
 	get pendingParent() {
-		return this.inbox.roles.cache.get(CHANNELS.PENDING_PARENT);
+		return this.inbox.channels.cache.get(CHANNELS.PENDING_PARENT);
 	}
 
 	get suspendedParent() {
-		return this.inbox.roles.cache.get(CHANNELS.SUSPENDED_PARENT);
+		return this.inbox.channels.cache.get(CHANNELS.SUSPENDED_PARENT);
 	}
 
 	get awaitingParent() {
-		return this.inbox.roles.cache.get(CHANNELS.AWAITING_PARENT);
+		return this.inbox.channels.cache.get(CHANNELS.AWAITING_PARENT);
 	}
 };

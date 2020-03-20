@@ -1,5 +1,11 @@
+const { KlasaClient } = require("klasa");
+
 module.exports = class Queue {
-	constructor() {
+	/**
+	 * @param {KlasaClient} client
+	 */
+	constructor(client) {
+		this.client = client;
 		this._processing = false;
 		this._queue = [];
 	}
@@ -21,7 +27,7 @@ module.exports = class Queue {
 			try {
 				await promiseFunc();
 			} catch (error) {
-				console.error(error);
+				this.client.console.error(error);
 			} finally {
 				await this._process();
 			}

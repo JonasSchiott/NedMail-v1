@@ -30,6 +30,7 @@
 		"discord.js": "github:discordjs/discord.js#master",
 		"dotenv": "^8.2.0",
 		"klasa": "github:dirigeants/klasa#v1.0.0-alpha",
+		"moment": "^2.24.0",
 		"mongodb": "^3.5.5"
 	},
 	"devDependencies": {

@@ -9,18 +9,22 @@ module.exports = class extends Monitor {
 	}
 
 	run(message) {
-		if (!this.client.ready || message.guild) return;
-
-		const Inbox = new InboxManager(message.author, message);
-
-		if (Inbox.isBlocked()) {
-			return Inbox.sendBlocked();
+		if (!this.client.ready || message.guild) {
+			return;
 		}
 
-		if (Inbox.isResponder()) {
-			return Inbox.sendResponder();
-		}
+		this.client.Queue.add(async () => {
+			const Inbox = new InboxManager(message.author, message);
 
-		Inbox.receive();
+			if (Inbox.isBlocked()) {
+				return Inbox.sender.sendBlocked();
+			}
+
+			if (Inbox.isResponder()) {
+				return Inbox.sender.sendResponder();
+			}
+
+			await Inbox.receive();
+		});
 	}
 };
