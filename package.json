@@ -1,12 +1,13 @@
 {
 	"name": "nedmail",
 	"version": "1.0.0",
-	"description": "A simple communication tool built for NedBot's support server: https://discord.gg/n5GWyxZ",
+	"description": "A simple communication tool built for NedBot's support server. https://discord.gg/n5GWyxZ",
 	"main": "src/main.js",
 	"scripts": {
 		"test": "echo Test complete!",
 		"run": "node src/main.js",
-		"postinstall": "link-module-alias"
+		"postinstall": "link-module-alias",
+		"preinstall": "link-module-alias && link-module-alias clean || true"
 	},
 	"homepage": "https://github.com/T3NED/NedMail#readme",
 	"repository": {
@@ -29,7 +30,6 @@
 		"discord.js": "github:discordjs/discord.js#master",
 		"dotenv": "^8.2.0",
 		"klasa": "github:dirigeants/klasa#v1.0.0-alpha",
-		"moment": "^2.24.0",
 		"mongodb": "^3.5.5"
 	},
 	"devDependencies": {

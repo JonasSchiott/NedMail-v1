@@ -12,8 +12,14 @@ module.exports = class extends Monitor {
 		if (!this.client.ready || message.guild) return;
 
 		const Inbox = new InboxManager(message.author, message);
-		if (Inbox.isBlocked()) return Inbox.sendBlocked();
-		if (Inbox.isResponder()) return Inbox.sendResponder();
+
+		if (Inbox.isBlocked()) {
+			return Inbox.sendBlocked();
+		}
+
+		if (Inbox.isResponder()) {
+			return Inbox.sendResponder();
+		}
 
 		Inbox.receive();
 	}

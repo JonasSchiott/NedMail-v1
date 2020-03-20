@@ -39,7 +39,7 @@ module.exports = class Inbox extends Mail {
 			});
 
 			await this.sender.send(MESSAGES.RECEIVED);
-			await channel.send(this.generateHeader());
+			await channel.send(this.generateHeader(mailID));
 			await this.guild.settings.update("mail.id", 1, { action: "add" });
 			return channel;
 		} catch {
@@ -47,15 +47,15 @@ module.exports = class Inbox extends Mail {
 		}
 	}
 
-	generateHeader() {
-		const member = this.guild.members.cache.get(user.id);
+	generateHeader(id) {
+		const member = this.guild.members.cache.get(this.user.id);
 		return new this.client.Embed()
 			.setTitle(`Thread information [Ref: ${id}]`)
 			.setThumbnail(this.client.user.displayAvatarURL())
 			.setDescription(
-				`**Username:** ${user.username}\n**ID:** ${user.id}\n**Account age:** ${moment(user.createdAt).format(
-					"L"
-				)}\n**Join age:** ${member ? moment(member.joinedAt).format("L") : "Unknown"}`
+				`**Username:** ${this.user.username}\n**ID:** ${this.user.id}\n**Account age:** ${moment(
+					this.user.createdAt
+				).format("L")}\n**Join age:** ${member ? moment(member.joinedAt).format("L") : "Unknown"}`
 			);
 	}
 };

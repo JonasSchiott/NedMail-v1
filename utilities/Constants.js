@@ -14,7 +14,7 @@ module.exports = {
 		partials: ["MESSAGE", "REACTION"],
 		disableMentions: "all",
 		schedule: { interval: 60000 },
-		readyMessage: client => `Logged in as ${client.user.username}`,
+		readyMessage: (client) => `Logged in as ${client.user.username}`,
 		customPromptDefaults: { quotedStringSupport: true },
 		presence: { activity: { name: process.env.PLAYING_STATUS } },
 		console: { timestamps: "HH:mm", useColor: true, utc: true },

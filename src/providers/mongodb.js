@@ -41,7 +41,7 @@ module.exports = class extends Provider {
 		return this.db
 			.listCollections()
 			.toArray()
-			.then(collections => collections.some(col => col.name === table));
+			.then((collections) => collections.some((col) => col.name === table));
 	}
 
 	createTable(table) {
@@ -74,7 +74,7 @@ module.exports = class extends Provider {
 	}
 
 	get(table, id) {
-		return this.db.collection(table).findOne(resolveQuery(id));
+		return this.db.collection(table).findOne(this.resolveQuery(id));
 	}
 
 	has(table, id) {
@@ -86,35 +86,40 @@ module.exports = class extends Provider {
 	}
 
 	create(table, id, doc = {}) {
-		return this.db.collection(table).insertOne(mergeObjects(this.parseUpdateInput(doc), resolveQuery(id)));
+		return this.db.collection(table).insertOne(mergeObjects(this.parseUpdateInput(doc), this.resolveQuery(id)));
 	}
 
 	delete(table, id) {
-		return this.db.collection(table).deleteOne(resolveQuery(id));
+		return this.db.collection(table).deleteOne(this.resolveQuery(id));
 	}
 
 	update(table, id, doc) {
 		return this.db
 			.collection(table)
-			.updateOne(resolveQuery(id), { $set: isObject(doc) ? flatten(doc) : parseEngineInput(doc) });
+			.updateOne(this.resolveQuery(id), { $set: isObject(doc) ? this.flatten(doc) : this.parseEngineInput(doc) });
 	}
 
 	replace(table, id, doc) {
-		return this.db.collection(table).replaceOne(resolveQuery(id), this.parseUpdateInput(doc));
+		return this.db.collection(table).replaceOne(this.resolveQuery(id), this.parseUpdateInput(doc));
+	}
+
+	resolveQuery(query) {
+		isObject(query) ? query : { id: query };
+	}
+
+	flatten(obj, path = "") {
+		let output = {};
+		for (const [key, value] of Object.entries(obj)) {
+			if (isObject(value)) {
+				output = Object.assign(output, this.flatten(value, path ? `${path}.${key}` : key));
+			} else {
+				output[path ? `${path}.${key}` : key] = value;
+			}
+		}
+		return output;
+	}
+
+	parseEngineInput(updated) {
+		return Object.assign({}, ...updated.map((entry) => ({ [entry.data[0]]: entry.data[1] })));
 	}
 };
-
-const resolveQuery = query => (isObject(query) ? query : { id: query });
-
-function flatten(obj, path = "") {
-	let output = {};
-	for (const [key, value] of Object.entries(obj)) {
-		if (isObject(value)) output = Object.assign(output, flatten(value, path ? `${path}.${key}` : key));
-		else output[path ? `${path}.${key}` : key] = value;
-	}
-	return output;
-}
-
-function parseEngineInput(updated) {
-	return Object.assign({}, ...updated.map(entry => ({ [entry.data[0]]: entry.data[1] })));
-}

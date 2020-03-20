@@ -72,7 +72,7 @@ module.exports = class Mail {
 	 * @param {KlasaMessage} message
 	 */
 	formatContent(message) {
-		const attachments = message.attachments.map(x => `[${x.name}](${x.url})`);
+		const attachments = message.attachments.map((x) => `[${x.name}](${x.url})`);
 		const content = Util.escapeMarkdown(message.content);
 		return content + (attachments.length ? `\n\n__Attachments:__\n${attachments.join("\n")}` : "") || "Unknown message";
 	}
