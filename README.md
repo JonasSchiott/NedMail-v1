@@ -1,58 +1,52 @@
-# NedMail
+<div align="center">
+    <img src="https://cdn.discordapp.com/attachments/539148571719761920/690646452237631578/icon-black.png" align="center" width=25%>
+  <br>
+  <br>
+    <strong> <i>"Connecting staff with their users"</i></strong>
+  <br>
+  <br>
+  <hr>
+  <br>
+  <a href="https://discord.gg/n5GWyxZ">
+    <img src="https://img.shields.io/discord/502930687503106068.svg?colorB=Blue&logo=discord&label=Support&style=for-the-badge" alt="Support"></a>
+
+<a href="https://app.codacy.com/manual/T3NED/NedMail/dashboard?bid=17110660">
+    <img src="https://img.shields.io/codacy/grade/d009d9fcc9f64fda85d205d2d7c7476b?logo=codacy&style=for-the-badge" alt="Code Quality">
+</a>
+
+<a href="https://github.com/T3NED/NedMail">
+    <img src="https://img.shields.io/github/languages/top/T3NED/NedMail?logo=javascript&color=yellow&logoColor=yellow&style=for-the-badge" alt="Languages">
+</a>
+<br>
+<a href="https://github.com/T3NED/NedMail">
+    <img src="https://img.shields.io/github/package-json/v/T3NED/NedMail?logo=npm&style=for-the-badge" alt="Version">
+</a>
+
+<a href="https://github.com/T3NED/NedMail/issues">
+    <img src="https://img.shields.io/github/issues/T3NED/NedMail?color=red&logo=github&logoColor=red&style=for-the-badge" alt="Issues">
+</a>
+
+<br>
+
+<a href="https://github.com/T3NED/NedMail/pulls">
+    <img src="https://img.shields.io/github/issues-pr/T3NED/NedMail?logo=github&logoColor=brightgreen&style=for-the-badge" alt="Pull Request">
+</a>
+<a href="https://github.com/T3NED/NedMail/blob/master/LICENSE"><img src="https://img.shields.io/github/license/T3NED/NedMail?color=37f149&style=for-the-badge" alt="LICENSE">
+</a>
+
+<br>
+<br>
+
+</div>
+
+<hr>
 
 A simple [Discord](https://discordapp.com/) communication tool built for [NedBot's support server](https://discord.gg/n5GWyxZ "Discord invite"). Inspired by Reddit's modmail system, NedMail is a secure, private way for users to contact an entire staff team in one easy-to-use inbox. Constructed with scalability in mind, NedMail is suitable for all operating servers.
 
 Additionally, we consider all pull requests that either provide: performance improvements, code tweaks, features we deem useful, or bug fixes. If you have any problems while running the bot, you can open an issue, or [join our support server](https://discord.gg/n5GWyxZ "Discord invite").
 
-### Cloning
+# <i><B><u>Self Hosting</u></B></i>
 
-To run the bot, we need to get the files on our system.
+* We will <b>not</b> provide support for the hosting of this code.
 
-First, ensure you've installed [git](https://git-scm.com/ "Git installation page") and [node v12](https://nodejs.org/en/ "Node installation page") or above.
-
-Next, open the terminal in a project folder - the folder the bot will be cloned.
-You can open the terminal by `right-clicking` in the directory and pressing "Git bash here", or by `shift + right-clicking` and pressing "Open PowerShell window here" - may be different depending on your operating system.
-
-Now run these three commands (in order) in your command line:
-
-```bash
-$ git init
-$ git clone https://github.com/T3NED/NedMail.git Mail-bot
-$ cd Mail-bot
-```
-
-### Installation
-
-Now we need to install the necessary modules for the bot. The `npm run preinstall` script cleans the cached module aliases (need to run this every time before installing node modules). The `npm run postinstall` script allows use of module aliases.
-
-Run these three commands in your command line:
-
-```bash
-$ npm run preinstall
-$ npm install
-$ npm run postinstall
-```
-
-### Running the bot
-
-You will need to configure the bot's settings to allow the proper functionality:
-
-- Create a copy of `.env.example` and name it `.env`
-- Fill in the details in `.env` correspondng with the bot
-- Change the settings in the [constants](utilities/Constants.js) file
-
-Finally, run the bot with the following command:
-
-```bash
-$ node .
-# or
-$ node src/main
-```
-
-### Glossary
-
-- NedBot - A [Discord](https://discordapp.com/) moderation bot
-- NedMail - Refers to this repository
-- Modmail - A communication system between users and staff
-- Terminal - A window used to run commands on your system
-- Command line - The line you execute commands
+* We will <b>not</b> provide support for the development of this code.
