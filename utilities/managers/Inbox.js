@@ -102,13 +102,25 @@ module.exports = class Inbox extends Mail {
 
 	generateHeader(id) {
 		const member = this.guild.members.cache.get(this.user.id);
+		const logs = this.findAllUserThreads(this.user.id);
+
 		return new this.client.Embed()
 			.setTitle(`Thread information [Ref: ${id}]`)
 			.setThumbnail(this.client.user.displayAvatarURL())
 			.setDescription(
-				`**Username:** ${this.user.username}\n**ID:** ${this.user.id}\n**Account age:** ${moment(
-					this.user.createdAt
-				).format("L")}\n**Join age:** ${member ? moment(member.joinedAt).format("L") : "Unknown"}`
+				[
+					`**Username:** ${this.user.tag}`,
+					`**ID:** ${this.user.id}`,
+					`**Registered:** ${moment(this.user.createdAt).format("L")}`,
+					`**Join age:** ${member ? moment(member.joinedAt).format("L") : "Unknown"}`,
+					logs.length
+						? [
+								`─────────────`,
+								`${this.user.username} has \`${logs.length}\` log${logs.length > 1 ? "s" : ""}`,
+								`Use \`${this.client.options.prefix}logs\` to view ${logs.length > 1 ? "them" : "it"}`
+						  ].join("\n")
+						: ""
+				].join("\n")
 			);
 	}
 };

@@ -82,6 +82,14 @@ module.exports = class Mail {
 		return this.inbox.channels.cache.get(thread.channelID);
 	}
 
+	/**
+	 * Returns an array of all the user's threads
+	 * @param {KlasaUser} id
+	 */
+	findAllUserThreads(id) {
+		return this.guild.settings.mail.threads.filter((x) => x.user === id);
+	}
+
 	get nextMailID() {
 		return this.guild.settings.mail.id + 1;
 	}
