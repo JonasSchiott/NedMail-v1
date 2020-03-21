@@ -11,11 +11,11 @@ module.exports = class extends Command {
   }
 
   async run(message) {
-    const Inbox = new InboxManager(this.client.user, message);
+    const Inbox = new InboxManager({ client: this.client }, message);
     const thread = Inbox.findOpenThread(message.channel.id);
 
     if (thread) {
-      message.sendMessage(thread.user);
+      return message.sendMessage(`User's ID is: \`${thread.user}\`!`);
     }
   }
 };
