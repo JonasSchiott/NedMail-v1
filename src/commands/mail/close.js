@@ -19,7 +19,7 @@ module.exports = class extends Command {
     if (threadChannel) {
       this.client.Queue.add(async () => {
         if (Inbox.isScheduled(thread.user)) {
-          await Inbox.cancelClose(thread.user, false);
+          await Inbox.cancelClose(thread.user);
         }
 
         let response = this.client.success;

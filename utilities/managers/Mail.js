@@ -92,7 +92,8 @@ module.exports = class Mail {
     const attachments = message.attachments.map((x) => `[${x.name}](${x.url})`);
     const content = Util.escapeMarkdown(message.content);
     return (
-      content + (attachments.length ? `\n\n__Attachments__\n${attachments.join("\n")}` : "").trim() || "Unknown message"
+      (content + (attachments.length ? `\n\n__Attachments__\n${attachments.join("\n")}` : "")).trim() ||
+      "Unknown message"
     );
   }
 
