@@ -14,15 +14,32 @@ module.exports = class Sender extends Mail {
   /**
    * Sends a message to the user and the thread channel (if specified)
    * @param {string} content
-   * @param {TextChannel=} threadChannel
    * @param {KlasaUser} sender
+   * @param {TextChannel=} threadChannel
+   * @param {object} thread
    */
-  async send(content, sender, threadChannel) {
-    const embed = this.generateMessage(sender, content);
-    const message = await this.user.send(embed).catch(() => {});
+  async send(message, sender, threadChannel, thread = {}) {
+    if (!this.user.id) {
+      this.user = await this.resolveUser(thread.user);
+    }
+
+    const embed = this.generateMessage(sender, this.formatContent(message));
+    const sentMessage = this.user && (await this.user.send(embed).catch(() => {}));
 
     if (threadChannel) {
-      threadChannel.send(embed[message ? "green" : "red"]());
+      threadChannel.send(embed[sentMessage ? "green" : "red"]());
+      thread.messages.push({
+        string: this.formatContent(message),
+        content: message.content,
+        attachments: message.attachments.map((x) => x.url),
+        createdAt: message.createdAt
+      });
+
+      const threads = this.guild.settings.mail.threads.filter((x) => x.id !== thread.id);
+      await this.guild.settings.update("mail.threads", [...threads, thread], {
+        action: "overwrite",
+        force: true
+      });
     }
   }
 

@@ -16,6 +16,7 @@ module.exports = class extends KlasaClient {
     this.Embed = Embed;
     this.Func = Functions;
     this.Config = Constants;
-    this.Queue = new Queue();
+    this.Queue = new Queue(this);
+    this.success = Constants.EMOJIS.SUCCESS;
   }
 };

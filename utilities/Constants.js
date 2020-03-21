@@ -13,12 +13,12 @@ module.exports = {
     disabledCorePieces: ["commands"],
     partials: ["MESSAGE", "REACTION"],
     disableMentions: "all",
-    schedule: { interval: 60000 },
+    schedule: { interval: 5000 },
     readyMessage: (client) => `Logged in as ${client.user.username}`,
     customPromptDefaults: { quotedStringSupport: true },
     presence: { activity: { name: process.env.PLAYING_STATUS } },
     console: { timestamps: "HH:mm", useColor: true, utc: true },
-    pieceDefaults: { commands: { quotedStringSupport: true, permissionLevel: 1 } },
+    pieceDefaults: { commands: { quotedStringSupport: true, permissionLevel: 0 } },
     providers: { default: "mongodb", mongodb: { connectionString: process.env.DATABASE_URI } }
   },
 
@@ -35,6 +35,10 @@ module.exports = {
 
   ROLES: {
     RESPONDER: "689974764995084347"
+  },
+
+  EMOJIS: {
+    SUCCESS: "<:thumbsup:673280466924732418>"
   },
 
   CHANNELS: {

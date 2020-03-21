@@ -16,12 +16,23 @@ module.exports = class extends Monitor {
     this.client.Queue.add(async () => {
       const Inbox = new InboxManager(message.author, message);
 
+      if (Inbox.isResponder()) {
+        return Inbox.sender.sendResponder();
+      }
+
       if (Inbox.isBlocked()) {
         return Inbox.sender.sendBlocked();
       }
 
-      if (Inbox.isResponder()) {
-        return Inbox.sender.sendResponder();
+      if (Inbox.isScheduled()) {
+        await Inbox.cancelClose();
+      }
+
+      if (Inbox.isOpen()) {
+        const threadChannel = Inbox.findOpenThreadChannel(message.author.id);
+        if (threadChannel && threadChannel.parent.id !== Inbox.pendingParent.id) {
+          await threadChannel.setParent(Inbox.pendingParent).catch(() => {});
+        }
       }
 
       await Inbox.receive();

@@ -14,13 +14,15 @@ module.exports = class Inbox extends Mail {
   constructor(user, message) {
     super(user.client, user);
     this.sender = new Sender(user);
-    this.content = this.formatContent(message);
-    this.dbContent = {
-      string: this.content,
-      content: message.content,
-      attachments: message.attachments.map((x) => x.url),
-      createdAt: message.createdAt
-    };
+    if (message) {
+      this.content = this.formatContent(message);
+      this.dbContent = {
+        string: this.content,
+        content: message.content,
+        attachments: message.attachments.map((x) => x.url),
+        createdAt: message.createdAt
+      };
+    }
   }
 
   /**
@@ -83,6 +85,24 @@ module.exports = class Inbox extends Mail {
     }
   }
 
+  /**
+   * Closes a mail thread
+   * @param {string} channel
+   */
+  async close(channel) {
+    const thread = this.findOpenThread(channel);
+
+    if (thread) {
+      thread.state = THREAD_STATUS.CLOSED;
+      thread.channelID = null;
+      const threads = this.guild.settings.mail.threads.filter((x) => x.id !== thread.id);
+      return await this.guild.settings.update("mail.threads", [...threads, thread], {
+        action: "overwrite",
+        force: true
+      });
+    }
+  }
+
   async createThreadChannel(tries = 1) {
     if (tries > 3) {
       return this.sender.sendRetryOverload();
@@ -98,7 +118,7 @@ module.exports = class Inbox extends Mail {
       .catch(() => {});
 
     if (!channel) {
-      return await this.createThreadChannel();
+      return await this.createThreadChannel(++tries);
     }
 
     await channel.send(this.generateHeader(mailID));
@@ -106,6 +126,16 @@ module.exports = class Inbox extends Mail {
     return channel;
   }
 
+  async cancelClose() {
+    const threadChannel = this.findOpenThreadChannel(this.user.id);
+    threadChannel.send("Scheduled close has been cancelled.");
+    return await this.client.schedule.delete(this.user.id).catch(() => {});
+  }
+
+  /**
+   * Generate a mail thread header
+   * @param {number} id Mail ID
+   */
   generateHeader(id) {
     const member = this.guild.members.cache.get(this.user.id);
     const logs = this.findAllUserThreads(this.user.id);
