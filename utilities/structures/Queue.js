@@ -16,7 +16,9 @@ module.exports = class Queue {
 
   async add(promiseFunc) {
     this._queue.push(promiseFunc);
-    if (!this._processing) await this._process();
+    if (!this._processing) {
+      await this._process();
+    }
   }
 
   async _process() {

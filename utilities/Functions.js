@@ -6,7 +6,9 @@ module.exports = {
     return `${cleanName.slice(0, 95)}-${name[1]}`;
   },
   format: (str, ...args) => {
-    for (const arg of args) str = str.replace(/{}/, arg);
+    for (const arg of args) {
+      str = str.replace(/{}/, arg);
+    }
     return str;
   }
 };

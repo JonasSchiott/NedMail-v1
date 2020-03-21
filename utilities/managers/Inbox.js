@@ -99,6 +99,7 @@ module.exports = class Inbox extends Mail {
       this.guild.settings.update("mail.id", mailID);
       return channel;
     } catch (e) {
+      this.client.console.error(e);
       return await this.createThreadChannel(++tries);
     }
   }
