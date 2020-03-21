@@ -34,12 +34,9 @@ module.exports = class Sender extends Mail {
         attachments: message.attachments.map((x) => x.url),
         createdAt: message.createdAt
       });
+      thread.read = true;
 
-      const threads = this.guild.settings.mail.threads.filter((x) => x.id !== thread.id);
-      await this.guild.settings.update("mail.threads", [...threads, thread], {
-        action: "overwrite",
-        force: true
-      });
+      return await this.save(thread);
     }
   }
 

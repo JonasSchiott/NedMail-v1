@@ -73,6 +73,18 @@ module.exports = class Mail {
   }
 
   /**
+   * Saves an updated mail thread to the db
+   * @param {object} thread
+   */
+  async save(thread) {
+    const threads = this.guild.settings.mail.threads.filter((x) => x.id !== thread.id);
+    await this.guild.settings.update("mail.threads", [...threads, thread], {
+      action: "overwrite",
+      force: true
+    });
+  }
+
+  /**
    * Formats a message with the content and attachments
    * @param {KlasaMessage} message
    */

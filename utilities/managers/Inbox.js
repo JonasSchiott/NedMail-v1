@@ -1,6 +1,6 @@
 const Mail = require("./Mail");
 const Sender = require("./Sender");
-const { MESSAGES, COLORS, THREAD_STATUS } = require("@utils/Constants");
+const { MESSAGES, COLORS, THREAD_STATUS, CHANNELS } = require("@utils/Constants");
 const { cleanName } = require("@utils/Functions");
 const { TextChannel } = require("discord.js");
 const { KlasaUser, KlasaMessage } = require("klasa");
@@ -41,17 +41,15 @@ module.exports = class Inbox extends Mail {
     if (threadChannel) {
       await this.send(content.string, threadChannel);
       thread.messages.push(content);
+      thread.read = false;
     } else if (thread) {
       retry = true;
       thread.state = THREAD_STATUS.CLOSED;
+      thread.read = true;
       thread.channelID = null;
     }
 
-    const threads = this.guild.settings.mail.threads.filter((x) => x.id !== thread.id);
-    const update = await this.guild.settings.update("mail.threads", [...threads, thread], {
-      action: "overwrite",
-      force: true
-    });
+    const update = await this.save(thread);
 
     if (retry) {
       return await this.receive(content, ++tries);
@@ -77,6 +75,7 @@ module.exports = class Inbox extends Mail {
         state: THREAD_STATUS.OPEN,
         user: this.user.id,
         channelID: threadChannel.id,
+        read: false,
         messages: []
       };
       await this.sender.sendReceived();
@@ -95,11 +94,8 @@ module.exports = class Inbox extends Mail {
     if (thread) {
       thread.state = THREAD_STATUS.CLOSED;
       thread.channelID = null;
-      const threads = this.guild.settings.mail.threads.filter((x) => x.id !== thread.id);
-      return await this.guild.settings.update("mail.threads", [...threads, thread], {
-        action: "overwrite",
-        force: true
-      });
+      thread.read = true;
+      return await this.save(thread);
     }
   }
 
@@ -136,6 +132,19 @@ module.exports = class Inbox extends Mail {
       threadChannel.send("Scheduled close has been cancelled.");
     }
     return await this.client.schedule.delete(user).catch(() => {});
+  }
+
+  /**
+   * Marks a mail thread as read
+   * @param {object} thread
+   * @param {TextChannel} threadChannel
+   */
+  async markread(thread, threadChannel) {
+    thread.read = true;
+    if (threadChannel.parent.id !== CHANNELS.AWAITING_PARENT) {
+      threadChannel.setParent(CHANNELS.AWAITING_PARENT).catch(() => {});
+    }
+    return await this.save(thread);
   }
 
   /**
