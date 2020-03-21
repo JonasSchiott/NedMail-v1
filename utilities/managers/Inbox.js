@@ -126,10 +126,16 @@ module.exports = class Inbox extends Mail {
     return channel;
   }
 
-  async cancelClose() {
-    const threadChannel = this.findOpenThreadChannel(this.user.id);
-    threadChannel.send("Scheduled close has been cancelled.");
-    return await this.client.schedule.delete(this.user.id).catch(() => {});
+  /**
+   * Cancels a scheduled mail thread close
+   * @param {string} user
+   */
+  async cancelClose(user = this.user.id, warn) {
+    const threadChannel = this.findOpenThreadChannel(user);
+    if (warn) {
+      threadChannel.send("Scheduled close has been cancelled.");
+    }
+    return await this.client.schedule.delete(user).catch(() => {});
   }
 
   /**

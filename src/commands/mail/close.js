@@ -7,41 +7,32 @@ module.exports = class extends Command {
       runIn: ["text"],
       aliases: ["c"],
       description: "Closes a mail thread.",
-      usage: "[duration:duration|cancel:string]"
+      usage: "[duration:duration|cancel|stop|abort]"
     });
-
-    this.terms = ["cancel", "stop", "abort"];
   }
 
   async run(message, [duration]) {
-    const Inbox = new InboxManager(this.client.user, message);
+    const Inbox = new InboxManager({ client: this.client }, message);
     const thread = Inbox.findOpenThread(message.channel.id) || {};
     const threadChannel = Inbox.findOpenThreadChannel(thread.channelID);
 
     if (threadChannel) {
       this.client.Queue.add(async () => {
-        if (this.client.schedule.get(thread.user)) {
-          await this.client.schedule.delete(thread.user).catch(() => {});
-          if (typeof duration === "string" && this.terms.includes(duration.toLowerCase())) {
-            return message.sendMessage(this.client.success);
-          }
+        if (Inbox.isScheduled(thread.user)) {
+          await Inbox.cancelClose(thread.user, false);
         }
 
-        message.sendMessage(
-          `${this.client.success} ${
-            duration
-              ? `Closing in ${Math.ceil((duration - new Date()) / 1000)} seconds. Use \`${
-                  this.client.options.prefix
-                }close cancel\` to abort.`
-              : ""
-          }`
-        );
-
-        if (duration) {
-          this.client.schedule.create("close", duration, { id: thread.user, data: thread });
-        } else {
-          this.client.tasks.get("close").run(thread);
+        let response = this.client.success;
+        if (typeof duration === "object") {
+          await this.client.schedule.create("close", duration, { id: thread.user, data: thread });
+          response = `${response} Closing in ${Math.ceil((duration - new Date()) / 1000)} seconds. Use \`${
+            this.client.options.prefix
+          }close cancel\` to abort.`;
+        } else if (!duration) {
+          await this.client.tasks.get("close").run(thread);
         }
+
+        return await message.sendMessage(response);
       });
     }
   }

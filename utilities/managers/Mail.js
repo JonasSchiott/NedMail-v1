@@ -45,8 +45,8 @@ module.exports = class Mail {
    * Checks whether the
    * @param {KlasaClient} user
    */
-  isScheduled(user = this.user) {
-    const thread = this.findOpenThread(user.id) || {};
+  isScheduled(user = this.user.id) {
+    const thread = this.findOpenThread(user) || {};
     return this.client.schedule.get(thread.user);
   }
 
