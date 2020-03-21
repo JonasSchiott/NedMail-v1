@@ -85,7 +85,7 @@ module.exports = class Inbox extends Mail {
 
   async createThreadChannel(tries = 1) {
     if (tries > 3) {
-      return this.sender.sendRetryOverload;
+      return this.sender.sendRetryOverload();
     }
 
     try {

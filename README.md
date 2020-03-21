@@ -48,5 +48,4 @@ Additionally, we consider all pull requests that either provide: performance imp
 # <i><B><u>Self Hosting</u></B></i>
 
 - We will <b>not</b> provide support for the hosting of this code.
-
 - We will <b>not</b> provide support for the development of this code.
