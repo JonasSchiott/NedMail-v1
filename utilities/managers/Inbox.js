@@ -67,7 +67,7 @@ module.exports = class Inbox extends Mail {
     return await threadChannel.send(this.generateMessage(this.user, content));
   }
 
-  async createThread() {
+  async createThread(forced) {
     const threadChannel = await this.createThreadChannel();
     if (threadChannel) {
       const thread = {
@@ -78,7 +78,11 @@ module.exports = class Inbox extends Mail {
         read: false,
         messages: []
       };
-      await this.sender.sendReceived();
+
+      if (!forced) {
+        await this.sender.sendReceived();
+      }
+
       await this.guild.settings.update("mail.threads", thread, { action: "add" });
       return this.findOpenThread(thread.id);
     }
