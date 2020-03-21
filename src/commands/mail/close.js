@@ -32,7 +32,7 @@ module.exports = class extends Command {
           await this.client.tasks.get("close").run(thread);
         }
 
-        return await message.sendMessage(response);
+        return await message.sendMessage(response).catch(() => {});
       });
     }
   }
