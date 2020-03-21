@@ -88,20 +88,22 @@ module.exports = class Inbox extends Mail {
       return this.sender.sendRetryOverload();
     }
 
-    try {
-      const mailID = this.nextMailID;
-      const channel = await this.inbox.channels.create(cleanName(this.user.tag), {
+    const mailID = this.nextMailID;
+    const channel = await this.inbox.channels
+      .create(cleanName(this.user.tag), {
         topic: `Mail thread created for **${this.user.tag}** with reference ID **${mailID}**.`,
         parent: this.pendingParent,
         reason: `Created new mail thread for ${this.user.tag}.`
-      });
-      await channel.send(this.generateHeader(mailID));
-      this.guild.settings.update("mail.id", mailID);
-      return channel;
-    } catch (e) {
-      this.client.console.error(e);
-      return await this.createThreadChannel(++tries);
+      })
+      .catch(() => {});
+
+    if (!channel) {
+      return await this.createThreadChannel();
     }
+
+    await channel.send(this.generateHeader(mailID));
+    this.guild.settings.update("mail.id", mailID);
+    return channel;
   }
 
   generateHeader(id) {
