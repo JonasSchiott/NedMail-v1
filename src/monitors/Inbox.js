@@ -16,7 +16,7 @@ module.exports = class extends Monitor {
     this.client.Queue.add(async () => {
       const Inbox = new InboxManager(message.author, message);
 
-      if (Inbox.isResponder()) {
+      if (!Inbox.isResponder()) {
         return Inbox.sender.sendResponder();
       }
 

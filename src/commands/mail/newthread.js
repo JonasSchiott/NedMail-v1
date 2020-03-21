@@ -19,11 +19,17 @@ module.exports = class extends Command {
       return message.sendMessage(`Mail thread already exists: ${threadChannel}`);
     }
 
+    if (Inbox.isResponder()) {
+      return message.sendMessage(`**${user.tag}** is a mail responder.`);
+    }
+
     if (user.settings.blocked) {
-      return `**${user.tag}** is currently blocked.`;
+      return message.sendMessage(`**${user.tag}** is currently blocked.`);
     }
 
     message.sendMessage(this.client.success);
-    return await Inbox.createThread(true);
+    this.client.Queue.add(async () => {
+      await Inbox.createThread(true);
+    });
   }
 };

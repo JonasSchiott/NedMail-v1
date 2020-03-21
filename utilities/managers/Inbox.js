@@ -1,6 +1,6 @@
 const Mail = require("./Mail");
 const Sender = require("./Sender");
-const { MESSAGES, COLORS, THREAD_STATUS, CHANNELS } = require("@utils/Constants");
+const { MESSAGES, COLORS, THREAD_STATUS, CHANNELS, ROLES } = require("@utils/Constants");
 const { cleanName } = require("@utils/Functions");
 const { TextChannel } = require("discord.js");
 const { KlasaUser, KlasaMessage } = require("klasa");
@@ -68,7 +68,7 @@ module.exports = class Inbox extends Mail {
   }
 
   async createThread(forced) {
-    const threadChannel = await this.createThreadChannel();
+    const threadChannel = await this.createThreadChannel(0, forced);
     if (threadChannel) {
       const thread = {
         id: this.nextMailID,
@@ -103,7 +103,7 @@ module.exports = class Inbox extends Mail {
     }
   }
 
-  async createThreadChannel(tries = 1) {
+  async createThreadChannel(tries = 1, forced) {
     if (tries > 3) {
       return this.sender.sendRetryOverload();
     }
@@ -121,7 +121,11 @@ module.exports = class Inbox extends Mail {
       return await this.createThreadChannel(++tries);
     }
 
-    await channel.send(this.generateHeader(mailID));
+    await channel.send({
+      embed: this.generateHeader(mailID),
+      content: !forced ? `<@&${ROLES.RESPONDER}>` : "",
+      disableMentions: "none"
+    });
     this.guild.settings.update("mail.id", mailID);
     return channel;
   }

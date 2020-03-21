@@ -16,8 +16,10 @@ module.exports = class extends Command {
     const threadChannel = Inbox.findOpenThreadChannel(thread.channelID);
 
     if (threadChannel) {
-      Inbox.markread(thread, threadChannel);
-      message.sendMessage(this.client.success);
+      this.client.Queue.add(async () => {
+        await Inbox.markread(thread, threadChannel);
+        message.sendMessage(this.client.success);
+      });
     }
   }
 };
