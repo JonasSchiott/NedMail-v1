@@ -29,10 +29,8 @@ module.exports = class extends Command {
       await user.settings.update("blocked", false);
     }
 
-    message.sendMessage(
-      `${this.client.success} ${
-        users.length > 1 ? `Unblocked users ${users.map((x) => `**${x.tag}**`).join(", ")}` : ""
-      }`
-    );
+    throw `${this.client.success} ${
+      users.length > 1 ? `Unblocked users ${users.map((x) => `**${x.tag}**`).join(", ")}` : ""
+    }`;
   }
 };

@@ -134,9 +134,9 @@ module.exports = class Inbox extends Mail {
       .create(cleanName(this.user.tag), {
         topic: `Mail thread created for **${this.user.tag}** with reference ID **${mailID}**.`,
         parent: this.pendingParent,
-        position: "0",
         reason: `Created new mail thread for ${this.user.tag}.`
       })
+      .then((x) => x.setPosition(0))
       .catch(() => {});
 
     if (!channel) {

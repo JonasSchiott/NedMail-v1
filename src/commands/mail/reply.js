@@ -6,7 +6,9 @@ module.exports = class extends Command {
     super(store, file, directory, {
       runIn: ["text"],
       aliases: ["r"],
-      description: "Sends mail in a modmail thread. If the first argument is 'anon', the mail is sent anonymously.",
+      description: "Sends mail to a thread user.",
+      extendedHelp:
+        "This command can only be run in thread channels. If the first argument is 'anon', the message will be sent with the responders name attached. Attachments are also automatically handled.",
       usage: "<anon|anonymous|base:default> <content:...string>",
       usageDelim: " "
     });

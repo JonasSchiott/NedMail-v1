@@ -5,8 +5,8 @@ module.exports = class extends Command {
   constructor(store, file, directory) {
     super(store, file, directory, {
       runIn: ["text"],
-      aliases: ["tl", "duration"],
-      description: "Shows how long is left on a mail block.",
+      description: "Shows how long is left on a user block.",
+      extendedHelp: "No more information",
       usage: "<user:mailUser>"
     });
 
