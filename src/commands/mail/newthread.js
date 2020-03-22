@@ -7,8 +7,12 @@ module.exports = class extends Command {
       runIn: ["text"],
       aliases: ["mail", "mt"],
       description: "Opens a new thread with a user.",
+      extendedHelp:
+        "Useful when responders wish to contact a user. This command opens a new thread, or redirects the author to an already-open one.",
       usage: "<user:user>"
     });
+
+    this.customizeResponse("user", "Please provide a valid user mention or ID.");
   }
 
   async run(message, [user]) {
@@ -16,20 +20,17 @@ module.exports = class extends Command {
     const threadChannel = Inbox.findOpenThreadChannel(user.id);
 
     if (threadChannel) {
-      return message.sendMessage(`Mail thread already exists: ${threadChannel}`);
+      throw `Mail thread already exists: ${threadChannel}`;
     }
 
     if (Inbox.isResponder()) {
-      return message.sendMessage(`**${user.tag}** is a mail responder.`);
+      throw `**${user.tag}** is a mail responder.`;
     }
 
-    if (user.settings.blocked) {
-      return message.sendMessage(`**${user.tag}** is currently blocked.`);
-    }
-
-    message.sendMessage(this.client.success);
     this.client.Queue.add(async () => {
-      await Inbox.createThread(true);
+      return await Inbox.createThread(true);
     });
+
+    throw this.client.success;
   }
 };

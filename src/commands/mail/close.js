@@ -27,6 +27,11 @@ module.exports = class extends Command {
         let response = this.client.success;
         if (typeof duration === "object") {
           await this.client.schedule.create("close", duration, { id: thread.user, data: thread });
+
+          if (threadChannel.parent.id !== Inbox.awaitingParent) {
+            await threadChannel.setParent(Inbox.awaitingParent);
+          }
+
           response = `${response} Closing in ${convertMS(duration - message.createdAt).string}. Use \`${
             this.client.options.prefix
           }close cancel\` to abort.`;
