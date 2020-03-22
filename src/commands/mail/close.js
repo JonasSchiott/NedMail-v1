@@ -7,6 +7,8 @@ module.exports = class extends Command {
     super(store, file, directory, {
       runIn: ["text"],
       description: "Closes a mail thread.",
+      extendedHelp:
+        "If a duration is specified, the thread will automatically close when the time is up. If either cancel, stop, or abort is specified, the scheduled close will be cancelled. Also, a scheduled close will be cancelled if the thread receives a new message.",
       usage: "[duration:duration|cancel|stop|abort]"
     });
   }
