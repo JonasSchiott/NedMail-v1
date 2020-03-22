@@ -38,7 +38,7 @@ module.exports = class Inbox extends Mail {
     let retry = false;
 
     if (threadChannel) {
-      await this.send(content.string, threadChannel);
+      await this.send(content.string, threadChannel, thread.alerts);
       thread.messages.push(content);
       thread.read = false;
     } else if (thread) {
@@ -47,6 +47,8 @@ module.exports = class Inbox extends Mail {
       thread.read = true;
       thread.channelID = null;
     }
+
+    thread.alerts = [];
 
     const update = await this.save(thread);
 
@@ -62,8 +64,11 @@ module.exports = class Inbox extends Mail {
    * @param {string} content
    * @param {TextChannel} threadChannel
    */
-  async send(content, threadChannel) {
-    return await threadChannel.send(this.generateMessage(this.user, content));
+  async send(content, threadChannel, alerts = []) {
+    return await threadChannel.send({
+      embed: this.generateMessage(this.user, content),
+      content: alerts.map((x) => `<@${x}>`).join(", ")
+    });
   }
 
   async createThread(forced) {
@@ -74,6 +79,7 @@ module.exports = class Inbox extends Mail {
         state: THREAD_STATUS.OPEN,
         user: this.user.id,
         channelID: threadChannel.id,
+        alerts: [],
         read: false,
         createdAt: new Date(),
         messages: []
@@ -101,6 +107,17 @@ module.exports = class Inbox extends Mail {
       thread.read = true;
       return await this.save(thread);
     }
+  }
+
+  async alert(thread, user, remove) {
+    if (remove || thread.alerts.includes(user)) {
+      thread.alerts = thread.alerts.filter((x) => x !== user);
+    } else {
+      thread.alerts.push(user);
+    }
+
+    await this.save(thread);
+    return thread.alerts.includes(user);
   }
 
   async createThreadChannel(tries = 1, forced) {

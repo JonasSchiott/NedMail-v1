@@ -12,7 +12,7 @@ module.exports = {
     prefix: process.env.PREFIX,
     disabledCorePieces: ["commands"],
     partials: ["MESSAGE", "REACTION"],
-    disableMentions: "all",
+    disableMentions: "everyone",
     schedule: { interval: 5000 },
     readyMessage: (client) => `Logged in as ${client.user.username}`,
     customPromptDefaults: { quotedStringSupport: true },
