@@ -134,6 +134,7 @@ module.exports = class Inbox extends Mail {
       .create(cleanName(this.user.tag), {
         topic: `Mail thread created for **${this.user.tag}** with reference ID **${mailID}**.`,
         parent: this.pendingParent,
+        position: "0",
         reason: `Created new mail thread for ${this.user.tag}.`
       })
       .catch(() => {});
@@ -141,6 +142,8 @@ module.exports = class Inbox extends Mail {
     if (!channel) {
       return await this.createThreadChannel(++tries);
     }
+
+    // channel.setPosition(0);
 
     await channel.send({
       embed: this.generateHeader(mailID),

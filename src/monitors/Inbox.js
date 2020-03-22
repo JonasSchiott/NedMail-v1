@@ -30,6 +30,9 @@ module.exports = class extends Monitor {
 
       if (Inbox.isOpen()) {
         const threadChannel = Inbox.findOpenThreadChannel(message.author.id);
+        if (threadChannel.position) {
+          threadChannel.setPosition(0);
+        }
         if (threadChannel && threadChannel.parent.id !== Inbox.pendingParent.id) {
           await threadChannel.setParent(Inbox.pendingParent).catch(() => {});
         }
