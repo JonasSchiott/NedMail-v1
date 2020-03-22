@@ -24,7 +24,9 @@ module.exports = class extends Command {
 
     switch (type) {
       case "create":
-        if (!args[0] || !args[1]) throw "You must provide a snippet name and a response.";
+        if (!args[0] || !args[1]) {
+          throw "You must provide a snippet name and a response.";
+        }
         const response = args.slice(1).join(" ");
         const creation = await Snip.create(args[0], response, message.author);
         if (!creation) {
@@ -73,14 +75,16 @@ module.exports = class extends Command {
         throw `Updated the snippet \`${snippet.names[0]}\`.`;
 
       case "info":
-        if (typeof snippet === "object") {
-          embed
-            .setTitle(format(snippet))
-            .addField("**Created At:**", new Timestamp("L").display(snippet.createdAt), true)
-            .addField("**Created By:**", `${snippet.createdBy.tag} (${snippet.createdBy.id})`, true)
-            .addField("**Response:**", snippet.response);
-          break;
+        if (typeof snippet !== "object") {
+          throw "Please provide a valid snippet.";
         }
+        embed
+          .setTitle(format(snippet))
+          .addField("**Created At:**", new Timestamp("L").display(snippet.createdAt), true)
+          .addField("**Created By:**", `${snippet.createdBy.tag} (${snippet.createdBy.id})`, true)
+          .addField("**Response:**", snippet.response);
+
+        break;
       default:
         if (typeof snippet === "object") {
           embed.setTitle(format(snippet)).setDescription(snippet.response);

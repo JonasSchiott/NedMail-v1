@@ -25,7 +25,6 @@ module.exports = class Snippet {
    */
   async create(name, response, author) {
     const snippet = this.get(name);
-    console.log(snippet);
     if (!snippet) {
       const snippets = this.all();
       snippets.push({

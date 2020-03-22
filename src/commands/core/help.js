@@ -20,7 +20,7 @@ module.exports = class extends Command {
       embed
         .setTitle(`${name} ${usage}`)
         .setDescription(command.description)
-        .addField(`**Information:**`, command.extendedHelp)
+        .addField("**Information:**", command.extendedHelp)
         .setThumbnail(this.client.user.displayAvatarURL());
     } else {
       embed.setDescription(this.client.commands.map((x) => `\`${x.name}\``).join(", ")).setTimestamp(null);
