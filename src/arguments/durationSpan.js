@@ -6,7 +6,9 @@ module.exports = class extends MultiArgument {
   }
 
   async run(arg, possible, message) {
-    if (!arg) throw message.language.get("RESOLVER_INVALID_STRING", possible.name);
+    if (!arg) {
+      throw message.language.get("RESOLVER_INVALID_STRING", possible.name);
+    }
     const {
       args,
       usage: { usageDelim }
