@@ -38,8 +38,8 @@ module.exports = class Mail {
    * @param {KlasaUser} user
    * @returns {boolean} Whether the user has an open thread
    */
-  isOpen(user = this.user) {
-    return !!this.findOpenThread(user.id).id;
+  isOpen(user = this.user.id) {
+    return !!this.findOpenThread(user).id;
   }
 
   /**
@@ -108,6 +108,25 @@ module.exports = class Mail {
    */
   findOpenThreadChannel(id) {
     const thread = this.findOpenThread(id);
+    return this.inbox.channels.cache.get(thread.channelID);
+  }
+
+  /**
+   * Finds a suspended thread from a channelID
+   * @param {string} id
+   */
+  findSuspendedThread(id) {
+    return (
+      this.guild.settings.mail.threads.filter((x) => x.channelID === id && x.state === THREAD_STATUS.SUSPENDED)[0] || {}
+    );
+  }
+
+  /**
+   * Finds a suspended thread channel from a channelID
+   * @param {string} id
+   */
+  findSuspendedThreadChannel(id) {
+    const thread = this.findSuspendedThread(id);
     return this.inbox.channels.cache.get(thread.channelID);
   }
 

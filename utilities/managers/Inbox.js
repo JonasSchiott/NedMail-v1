@@ -115,6 +115,37 @@ module.exports = class Inbox extends Mail {
   }
 
   /**
+   * Suspends a thread
+   * @param {object} thread
+   */
+  async suspend(thread) {
+    const threadChannel = this.findOpenThreadChannel(thread.channelID);
+    if (threadChannel) {
+      threadChannel.setParent(CHANNELS.SUSPENDED_PARENT);
+      thread.state = THREAD_STATUS.SUSPENDED;
+      thread.read = true;
+      return this.save(thread);
+    }
+  }
+
+  /**
+   * Unsuspends a thread
+   * @param {object} thread
+   */
+  async unsuspend(thread) {
+    if (this.isOpen(thread.user)) {
+      return false;
+    }
+
+    const threadChannel = this.findSuspendedThreadChannel(thread.channelID);
+    if (threadChannel) {
+      threadChannel.setParent(CHANNELS.AWAITING_PARENT);
+      thread.state = THREAD_STATUS.OPEN;
+      return this.save(thread);
+    }
+  }
+
+  /**
    * Closes a mail thread
    * @param {string} channel
    */
