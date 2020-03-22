@@ -5,8 +5,10 @@ module.exports = class extends Command {
   constructor(store, file, directory) {
     super(store, file, directory, {
       runIn: ["text"],
-      aliases: ["l"],
+      aliases: ["history"],
       description: "Shows a user's previous mail logs.",
+      extendedHelp:
+        "If the command is run in a thread channel, the user will default to the thread user. User can be a user id, or thread channel mention or id.",
       usage: "[user:mailUser]"
     });
   }
@@ -17,17 +19,16 @@ module.exports = class extends Command {
 
     const target = user || (await Inbox.resolveUser(thread.user));
     if (!target) {
-      return message.sendMessage("Please provide a valid user, thread, or run in a thread channel.");
+      throw "Please provide a valid user, thread, or run in a thread channel.";
     }
 
     const threads = Inbox.findAllUserThreads(target.id);
     const embed = new this.client.Embed()
       .setTitle(`Mail logs for ${target.tag}`)
-      .setThumbnail(target.displayAvatarURL());
+      .setThumbnail(target.displayAvatarURL())
+      .setDescription("No previous logs");
 
-    if (!threads.length) {
-      embed.setDescription("No previous logs");
-    } else {
+    if (threads.length) {
       embed.setDescription(
         threads
           .sort((a, b) => b.createdAt - a.createdAt)
@@ -42,6 +43,6 @@ module.exports = class extends Command {
       );
     }
 
-    message.sendMessage(embed);
+    throw embed;
   }
 };
