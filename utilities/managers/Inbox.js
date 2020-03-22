@@ -75,6 +75,21 @@ module.exports = class Inbox extends Mail {
     });
   }
 
+  /**
+   * Posts a message the thread user edits
+   * @param {object} thread
+   * @param {any} content
+   */
+  async edit(thread, content = this.dbContent.string) {
+    const threadChannel = this.findOpenThreadChannel(this.user.id);
+    if (threadChannel) {
+      threadChannel.send(this.generateMessage(this.user, content, false, true));
+      thread.messages.push(content);
+      thread.edited = true;
+      return await this.save(thread);
+    }
+  }
+
   async createThread(forced) {
     const threadChannel = await this.createThreadChannel(0, forced);
     if (threadChannel) {
@@ -84,6 +99,7 @@ module.exports = class Inbox extends Mail {
         user: this.user.id,
         channelID: threadChannel.id,
         alerts: [],
+        edited: false,
         read: false,
         createdAt: new Date(),
         messages: []
@@ -142,8 +158,6 @@ module.exports = class Inbox extends Mail {
     if (!channel) {
       return await this.createThreadChannel(++tries);
     }
-
-    // channel.setPosition(0);
 
     await channel.send({
       embed: this.generateHeader(mailID),

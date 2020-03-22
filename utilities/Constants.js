@@ -25,7 +25,8 @@ module.exports = {
   COLORS: {
     MAIN: "578af7",
     RED: "ff6961",
-    GREEN: "77dd77"
+    GREEN: "77dd77",
+    ORANGE: "ffb347"
   },
 
   GUILDS: {

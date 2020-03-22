@@ -57,7 +57,7 @@ module.exports = class Mail {
    * @param {string} content
    * @param {string} color
    */
-  generateMessage(sender, content, color = COLORS.MAIN) {
+  generateMessage(sender, content, color = COLORS.MAIN, edit) {
     const head = sender
       ? sender.id === this.client.user.id
         ? sender
@@ -69,6 +69,10 @@ module.exports = class Mail {
       .setTimestamp(null)
       .setThumbnail(thumbnail)
       .setDescription([head, "─────────────", content].join("\n"));
+
+    if (edit) {
+      embed.setTitle("Edited Message").setColor(COLORS.ORANGE);
+    }
 
     return embed;
   }
