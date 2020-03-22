@@ -13,7 +13,7 @@ module.exports = {
     disabledCorePieces: ["commands"],
     partials: ["MESSAGE", "REACTION"],
     disableMentions: "everyone",
-    schedule: { interval: 5000 },
+    schedule: { interval: 60000 },
     readyMessage: (client) => `Logged in as ${client.user.username}`,
     customPromptDefaults: { quotedStringSupport: true },
     presence: { activity: { name: process.env.PLAYING_STATUS } },
