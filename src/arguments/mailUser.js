@@ -3,13 +3,13 @@ const InboxManager = require("@managers/Inbox");
 
 module.exports = class extends Argument {
   async run(arg, possible, message) {
-    if (arg) {
-      arg = arg.replace(/<>@!/, "");
+    if (typeof arg === "string") {
+      arg = arg.replace(/[\\<>@!]/g, "");
     }
 
     const Inbox = new InboxManager({ client: this.client });
     const thread = Inbox.findOpenThread(arg) || {};
-    const user = await this.client.users.fetch(thread.user).catch(() => {});
+    const user = await this.client.users.fetch(thread.user || arg).catch(() => {});
     if (user) {
       return user;
     }

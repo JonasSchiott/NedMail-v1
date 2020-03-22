@@ -76,6 +76,7 @@ module.exports = class Inbox extends Mail {
         user: this.user.id,
         channelID: threadChannel.id,
         read: false,
+        createdAt: new Date(),
         messages: []
       };
 

@@ -30,7 +30,9 @@ module.exports = class extends Command {
     }
 
     message.sendMessage(
-      `${this.client.success} ${users.length > 1 ? `Unblocked ${users.map((x) => `**${x.tag}**`).join(", ")}` : ""}`
+      `${this.client.success} ${
+        users.length > 1 ? `Unblocked users ${users.map((x) => `**${x.tag}**`).join(", ")}` : ""
+      }`
     );
   }
 };

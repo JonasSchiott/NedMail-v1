@@ -1,11 +1,12 @@
-const { Command, KlasaUser } = require("klasa");
+const { Command } = require("klasa");
+const { convertMS } = require("@utils/Functions");
 
 module.exports = class extends Command {
   constructor(store, file, directory) {
     super(store, file, directory, {
       aliases: ["b", "blacklist"],
       description: "Blocks a user from contacting mail",
-      usage: "<users:...mailUser{,10}|thread:custom> [duration:duration]",
+      usage: "<users:...mailUser{,10}|thread:custom> [duration:...duration]",
       usageDelim: " "
     });
 
@@ -33,7 +34,7 @@ module.exports = class extends Command {
         this.client.success,
         users.length > 1 || duration ? "Blocked" : "",
         users.length > 1 ? `users ${users.map((x) => `**${x.tag}**`).join(", ")}` : "",
-        duration ? `for ${Math.ceil((duration - new Date()) / 1000)} seconds` : ""
+        duration ? `for ${convertMS(duration - message.createdAt).string}` : ""
       ]
         .filter((x) => x)
         .join(" ")

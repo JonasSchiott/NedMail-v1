@@ -1,5 +1,6 @@
 const { Command } = require("klasa");
 const InboxManager = require("@managers/Inbox");
+const { convertMS } = require("@utils/Functions");
 
 module.exports = class extends Command {
   constructor(store, file, directory) {
@@ -25,7 +26,7 @@ module.exports = class extends Command {
         let response = this.client.success;
         if (typeof duration === "object") {
           await this.client.schedule.create("close", duration, { id: thread.user, data: thread });
-          response = `${response} Closing in ${Math.ceil((duration - new Date()) / 1000)} seconds. Use \`${
+          response = `${response} Closing in ${convertMS(duration - message.createdAt).string}. Use \`${
             this.client.options.prefix
           }close cancel\` to abort.`;
         } else if (!duration) {
