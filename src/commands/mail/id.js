@@ -5,17 +5,17 @@ module.exports = class extends Command {
   constructor(store, file, directory) {
     super(store, file, directory, {
       runIn: ["text"],
-      aliases: ["userid"],
-      description: "Shows the id of the mail thread user."
+      description: "Shows the id of the thread user.",
+      extendedHelp: "This command must be run in a thread channel."
     });
   }
 
   async run(message) {
-    const Inbox = new InboxManager({ client: this.client }, message);
+    const Inbox = new InboxManager(this.client.user);
     const thread = Inbox.findOpenThread(message.channel.id);
 
     if (thread) {
-      return message.sendMessage(`User's ID is: \`${thread.user}\`!`);
+      throw `User's ID is: \`${thread.user}\`!`;
     }
   }
 };
