@@ -3,8 +3,7 @@ const Sender = require("./Sender");
 const { MESSAGES, COLORS, THREAD_STATUS, CHANNELS, ROLES } = require("@utils/Constants");
 const { cleanName } = require("@utils/Functions");
 const { TextChannel } = require("discord.js");
-const { KlasaUser, KlasaMessage } = require("klasa");
-const moment = require("moment");
+const { KlasaUser, KlasaMessage, Timestamp } = require("klasa");
 
 module.exports = class Inbox extends Mail {
   /**
@@ -171,8 +170,8 @@ module.exports = class Inbox extends Mail {
         [
           `**Username:** ${this.user.tag}`,
           `**ID:** ${this.user.id}`,
-          `**Registered:** ${moment(this.user.createdAt).format("L")}`,
-          `**Join age:** ${member ? moment(member.joinedAt).format("L") : "Unknown"}`,
+          `**Registered:** ${new Timestamp("L").display(this.user.createdAt)}`,
+          `**Join age:** ${member ? new Timestamp("L").display(member.joinedAt) : "Unknown"}`,
           logs.length
             ? [
                 "─────────────",
