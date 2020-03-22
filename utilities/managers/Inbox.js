@@ -1,6 +1,6 @@
 const Mail = require("./Mail");
 const Sender = require("./Sender");
-const { MESSAGES, COLORS, THREAD_STATUS, CHANNELS, ROLES } = require("@utils/Constants");
+const { THREAD_STATUS, CHANNELS, ROLES } = require("@utils/Constants");
 const { cleanName } = require("@utils/Functions");
 const { TextChannel } = require("discord.js");
 const { KlasaUser, KlasaMessage, Timestamp } = require("klasa");
@@ -25,7 +25,7 @@ module.exports = class Inbox extends Mail {
   }
 
   /**
-   * Manages the incoming message
+   * Manages an incoming message
    * @param {string} content
    */
   async receive(content = this.dbContent, tries = 1) {
@@ -33,7 +33,11 @@ module.exports = class Inbox extends Mail {
       return this.sender.sendRetryOverload();
     }
 
-    const thread = this.findOpenThread(this.user.id) || (await this.createThread());
+    let thread = this.findOpenThread(this.user.id);
+    if (!thread.id) {
+      thread = await this.createThread();
+    }
+
     const threadChannel = this.findOpenThreadChannel(thread ? thread.id : null);
     let retry = false;
 

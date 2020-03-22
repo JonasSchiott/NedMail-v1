@@ -8,7 +8,7 @@ module.exports = class extends Argument {
     }
 
     const Inbox = new InboxManager({ client: this.client });
-    const thread = Inbox.findOpenThread(arg) || {};
+    const thread = Inbox.findOpenThread(arg);
     const user = await this.client.users.fetch(thread.user || arg).catch(() => {});
     if (user) {
       return user;

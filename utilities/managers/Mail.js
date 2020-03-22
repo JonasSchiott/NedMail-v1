@@ -1,6 +1,6 @@
-const { GUILDS, CHANNELS, ROLES, COLORS, MESSAGES, THREAD_STATUS } = require("@utils/Constants");
+const { GUILDS, CHANNELS, ROLES, COLORS, THREAD_STATUS } = require("@utils/Constants");
 const { KlasaClient, KlasaUser, KlasaMessage } = require("klasa");
-const { TextChannel, Util } = require("discord.js");
+const { Util } = require("discord.js");
 
 module.exports = class Mail {
   /**
@@ -15,6 +15,7 @@ module.exports = class Mail {
     this.inbox = client.guilds.cache.get(GUILDS.INBOX);
     this.member = this.guild.members.cache.get(user.id);
   }
+
   /**
    * @param {KlasaUser} user
    * @returns {boolean} Whether the user has permission to respond to mail
@@ -35,23 +36,23 @@ module.exports = class Mail {
 
   /**
    * @param {KlasaUser} user
-   * @returns Whether the user has an open thread
+   * @returns {boolean} Whether the user has an open thread
    */
   isOpen(user = this.user) {
-    return !!this.findOpenThread(user.id);
+    return !!this.findOpenThread(user.id).id;
   }
 
   /**
-   * Checks whether the
-   * @param {KlasaClient} user
+   * @param {KlasaClient}
+   * @returns {boolean} Whether the thread is scheduled to close
    */
   isScheduled(user = this.user.id) {
-    const thread = this.findOpenThread(user) || {};
+    const thread = this.findOpenThread(user);
     return this.client.schedule.get(thread.user);
   }
 
   /**
-   * Generates a mail message
+   * Prepares a mail message embed
    * @param {KlasaUser} sender
    * @param {string} content
    * @param {string} color
@@ -73,19 +74,7 @@ module.exports = class Mail {
   }
 
   /**
-   * Saves an updated mail thread to the db
-   * @param {object} thread
-   */
-  async save(thread) {
-    const threads = this.guild.settings.mail.threads.filter((x) => x.id !== thread.id);
-    await this.guild.settings.update("mail.threads", [...threads, thread], {
-      action: "overwrite",
-      force: true
-    });
-  }
-
-  /**
-   * Formats a message with the content and attachments
+   * Formats a message containing the content and attachments
    * @param {KlasaMessage} message
    */
   formatContent(message) {
@@ -102,9 +91,11 @@ module.exports = class Mail {
    * @param {string|number} id
    */
   findOpenThread(id) {
-    return this.guild.settings.mail.threads.filter(
-      (x) => [x.id, x.channelID, x.user].includes(id) && x.state === THREAD_STATUS.OPEN
-    )[0];
+    return (
+      this.guild.settings.mail.threads.filter(
+        (x) => [x.id, x.channelID, x.user].includes(id) && x.state === THREAD_STATUS.OPEN
+      )[0] || {}
+    );
   }
 
   /**
@@ -112,24 +103,38 @@ module.exports = class Mail {
    * @param {string|number} id
    */
   findOpenThreadChannel(id) {
-    const thread = this.findOpenThread(id) || {};
+    const thread = this.findOpenThread(id);
     return this.inbox.channels.cache.get(thread.channelID);
   }
 
   /**
-   * Returns an array of all the user's threads
-   * @param {KlasaUser} id
+   * Returns an array of all the threads attached to a user
+   * @param {KlasaUser} user
    */
-  findAllUserThreads(id) {
-    return this.guild.settings.mail.threads.filter((x) => x.user === id);
+  findAllUserThreads(user) {
+    return this.guild.settings.mail.threads.filter((x) => x.user === user);
   }
 
   /**
    * Resolves any value as a KlasaUser
    * @param {any} user
+   * @returns {KlasaUser}
    */
   async resolveUser(user) {
-    return await this.client.users.resolve(user); //.catch(() => {});
+    return await this.client.users.resolve(user);
+  }
+
+  /**
+   * Saves an updated mail thread to the db
+   * @param {object} thread
+   * @returns The updated mail threads
+   */
+  async save(thread) {
+    const threads = this.guild.settings.mail.threads.filter((x) => x.id !== thread.id);
+    return await this.guild.settings.update("mail.threads", [...threads, thread], {
+      action: "overwrite",
+      force: true
+    });
   }
 
   get nextMailID() {

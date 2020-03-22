@@ -1,11 +1,11 @@
 const Mail = require("./Mail");
 const { MESSAGES, COLORS } = require("@utils/Constants");
-const { GuildMember, TextChannel } = require("discord.js");
+const { TextChannel } = require("discord.js");
 const { KlasaUser } = require("klasa");
 
 module.exports = class Sender extends Mail {
   /**
-   * @param {GuildMember} member
+   * @param {KlasaUser} user
    */
   constructor(user) {
     super(user.client, user);
