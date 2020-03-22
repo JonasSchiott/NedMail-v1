@@ -29,15 +29,13 @@ module.exports = class extends Command {
       }
     }
 
-    return message.sendMessage(
-      [
-        this.client.success,
-        users.length > 1 || duration ? "Blocked" : "",
-        users.length > 1 ? `users ${users.map((x) => `**${x.tag}**`).join(", ")}` : "",
-        duration ? `for ${convertMS(duration - message.createdAt).string}` : ""
-      ]
-        .filter((x) => x)
-        .join(" ")
-    );
+    throw [
+      this.client.success,
+      users.length > 1 || duration ? "Blocked" : "",
+      users.length > 1 ? `users ${users.map((x) => `**${x.tag}**`).join(", ")}` : "",
+      duration ? `for ${convertMS(duration - message.createdAt).string}` : ""
+    ]
+      .filter((x) => x)
+      .join(" ");
   }
 };

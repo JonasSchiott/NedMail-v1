@@ -6,15 +6,14 @@ module.exports = class extends Command {
   constructor(store, file, directory) {
     super(store, file, directory, {
       runIn: ["text"],
-      aliases: ["c"],
       description: "Closes a mail thread.",
       usage: "[duration:duration|cancel|stop|abort]"
     });
   }
 
   async run(message, [duration]) {
-    const Inbox = new InboxManager({ client: this.client }, message);
-    const thread = Inbox.findOpenThread(message.channel.id) || {};
+    const Inbox = new InboxManager(this.client.user);
+    const thread = Inbox.findOpenThread(message.channel.id);
     const threadChannel = Inbox.findOpenThreadChannel(thread.channelID);
 
     if (threadChannel) {

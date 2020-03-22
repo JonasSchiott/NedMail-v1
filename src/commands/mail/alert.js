@@ -19,7 +19,7 @@ module.exports = class extends Command {
 
     if (threadChannel) {
       const alert = await Inbox.alert(thread, message.author.id, typeof mailThread === "string");
-      return message.sendMessage([this.client.success, !alert ? "Unsubscribed" : ""].join(" "));
+      throw [this.client.success, !alert ? "Unsubscribed" : ""].join(" ");
     }
   }
 };
