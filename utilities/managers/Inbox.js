@@ -1,7 +1,7 @@
 const Mail = require("./Mail");
 const Sender = require("./Sender");
 const { THREAD_STATUS, CHANNELS, ROLES } = require("@utils/Constants");
-const { cleanName } = require("@utils/Functions");
+const { cleanName, capitalise } = require("@utils/Functions");
 const { TextChannel } = require("discord.js");
 const { KlasaUser, KlasaMessage, Timestamp } = require("klasa");
 
@@ -22,45 +22,6 @@ module.exports = class Inbox extends Mail {
         createdAt: message.createdAt
       };
     }
-  }
-
-  /**
-   * Manages an incoming message
-   * @param {string} content
-   */
-  async receive(content = this.dbContent, tries = 1) {
-    if (tries > 3) {
-      return this.sender.sendRetryOverload();
-    }
-
-    let thread = this.findOpenThread(this.user.id);
-    if (!thread.id) {
-      thread = await this.createThread();
-    }
-
-    const threadChannel = this.findOpenThreadChannel(thread ? thread.id : null);
-    let retry = false;
-
-    if (threadChannel) {
-      await this.send(content.string, threadChannel, thread.alerts);
-      thread.messages.push(content);
-      thread.read = false;
-    } else if (thread) {
-      retry = true;
-      thread.state = THREAD_STATUS.CLOSED;
-      thread.read = true;
-      thread.channelID = null;
-    }
-
-    thread.alerts = [];
-
-    const update = await this.save(thread);
-
-    if (retry) {
-      return await this.receive(content, ++tries);
-    }
-
-    return update;
   }
 
   /**
@@ -90,8 +51,45 @@ module.exports = class Inbox extends Mail {
     }
   }
 
+  /**
+   * Manages an incoming message
+   * @param {string} content
+   */
+  async receive(content = this.dbContent) {
+    let thread = this.findOpenThread(this.user.id);
+    if (!thread.id) {
+      thread = await this.createThread();
+    }
+
+    const threadChannel = this.findOpenThreadChannel(thread ? thread.id : null);
+
+    if (threadChannel) {
+      await this.send(content.string, threadChannel, thread.alerts);
+      thread.messages.push(content);
+      thread.read = false;
+    } else if (thread) {
+      thread.state = THREAD_STATUS.CLOSED;
+      thread.read = true;
+      thread.channelID = null;
+    }
+
+    thread.alerts = [];
+
+    return await this.save(thread);
+  }
+
+  /**
+   * Creates a new thread
+   * @param {boolean} forced
+   */
   async createThread(forced) {
-    const threadChannel = await this.createThreadChannel(0, forced);
+    let received;
+    if (!forced) {
+      received = await this.sender.sendReceived();
+    }
+
+    const threadChannel = await this.createThreadChannel(forced, received);
+
     if (threadChannel) {
       const thread = {
         id: this.nextMailID,
@@ -105,13 +103,42 @@ module.exports = class Inbox extends Mail {
         messages: []
       };
 
-      if (!forced) {
-        await this.sender.sendReceived();
-      }
-
+      this.log(thread);
       await this.guild.settings.update("mail.threads", thread, { action: "add" });
       return this.findOpenThread(thread.id);
     }
+  }
+
+  /**
+   * Creates and returns a thread channel
+   * @param {number} tries
+   * @param {boolean} forced
+   */
+  async createThreadChannel(forced, message) {
+    const mailID = this.nextMailID;
+    const channel = await this.inbox.channels
+      .create(cleanName(this.user.tag), {
+        topic: `Mail thread created for **${this.user.tag}** with reference ID **${mailID}**.`,
+        parent: this.pendingParent,
+        reason: `Created new mail thread for ${this.user.tag}.`
+      })
+      .then((x) => x.setPosition(0))
+      .catch(() => {});
+
+    if (!channel) {
+      return this.sender.sendRetryOverload(message);
+    }
+
+    await channel
+      .send({
+        embed: this.generateHeader(mailID),
+        content: !forced ? `<@&${ROLES.RESPONDER}>` : "",
+        disableMentions: "none"
+      })
+      .then((x) => x.pin());
+
+    this.guild.settings.update("mail.id", mailID);
+    return channel;
   }
 
   /**
@@ -124,7 +151,8 @@ module.exports = class Inbox extends Mail {
       threadChannel.setParent(CHANNELS.SUSPENDED_PARENT);
       thread.state = THREAD_STATUS.SUSPENDED;
       thread.read = true;
-      return this.save(thread);
+      this.log(thread);
+      return await this.save(thread);
     }
   }
 
@@ -141,7 +169,8 @@ module.exports = class Inbox extends Mail {
     if (threadChannel) {
       threadChannel.setParent(CHANNELS.AWAITING_PARENT);
       thread.state = THREAD_STATUS.OPEN;
-      return this.save(thread);
+      this.log(thread);
+      return await this.save(thread);
     }
   }
 
@@ -156,47 +185,9 @@ module.exports = class Inbox extends Mail {
       thread.state = THREAD_STATUS.CLOSED;
       thread.channelID = null;
       thread.read = true;
+      this.log(thread);
       return await this.save(thread);
     }
-  }
-
-  async alert(thread, user, remove) {
-    if (remove || thread.alerts.includes(user)) {
-      thread.alerts = thread.alerts.filter((x) => x !== user);
-    } else {
-      thread.alerts.push(user);
-    }
-
-    await this.save(thread);
-    return thread.alerts.includes(user);
-  }
-
-  async createThreadChannel(tries = 1, forced) {
-    if (tries > 3) {
-      return this.sender.sendRetryOverload();
-    }
-
-    const mailID = this.nextMailID;
-    const channel = await this.inbox.channels
-      .create(cleanName(this.user.tag), {
-        topic: `Mail thread created for **${this.user.tag}** with reference ID **${mailID}**.`,
-        parent: this.pendingParent,
-        reason: `Created new mail thread for ${this.user.tag}.`
-      })
-      .then((x) => x.setPosition(0))
-      .catch(() => {});
-
-    if (!channel) {
-      return await this.createThreadChannel(++tries);
-    }
-
-    await channel.send({
-      embed: this.generateHeader(mailID),
-      content: !forced ? `<@&${ROLES.RESPONDER}>` : "",
-      disableMentions: "none"
-    });
-    this.guild.settings.update("mail.id", mailID);
-    return channel;
   }
 
   /**
@@ -209,6 +200,23 @@ module.exports = class Inbox extends Mail {
       threadChannel.send("Scheduled close has been cancelled.");
     }
     return await this.client.schedule.delete(user).catch(() => {});
+  }
+
+  /**
+   * Adds a responder to the alerts
+   * @param {object} thread
+   * @param {KlasaUser} user
+   * @param {boolean} remove
+   */
+  async alert(thread, user, remove) {
+    if (remove || thread.alerts.includes(user)) {
+      thread.alerts = thread.alerts.filter((x) => x !== user);
+    } else {
+      thread.alerts.push(user);
+    }
+
+    await this.save(thread);
+    return thread.alerts.includes(user);
   }
 
   /**
@@ -225,7 +233,27 @@ module.exports = class Inbox extends Mail {
   }
 
   /**
-   * Generate a mail thread header
+   * Generates a log embed
+   * @param {object} thread
+   */
+  async log(thread) {
+    if (this.mailAudit) {
+      const user = await this.resolveUser(thread.user);
+      return await this.mailAudit.send(
+        new this.client.Embed()
+          .setTitle("Mail Thread")
+          .setDescription([
+            `**Mail ID:** ${thread.id}`,
+            `**State:** ${capitalise(Object.keys(THREAD_STATUS)[thread.state].toLowerCase())}`,
+            `**User:** ${user ? `${this.user.tag} (${this.user.id})` : "Unknown"}`,
+            `**Channel:** ${thread.channelID ? `<#${thread.channelID}> (${thread.channelID})` : "None"}`
+          ])
+      );
+    }
+  }
+
+  /**
+   * Generates a mail thread header
    * @param {number} id Mail ID
    */
   generateHeader(id) {

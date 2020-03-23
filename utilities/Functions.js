@@ -11,6 +11,14 @@ module.exports = {
     }
     return str;
   },
+  arrayChunk(array, size) {
+    let results = [];
+    while (array.length) {
+      results.push(array.splice(0, size));
+    }
+
+    return results;
+  },
   convertMS(ms) {
     const roundTowardsZero = ms > 0 ? Math.floor : Math.ceil;
     const converted = {

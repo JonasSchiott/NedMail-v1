@@ -59,8 +59,8 @@ module.exports = {
   },
 
   THREAD_STATUS: {
-    OPEN: 1,
-    CLOSED: 2,
-    SUSPENDED: 3
+    OPEN: 0,
+    CLOSED: 1,
+    SUSPENDED: 2
   }
 };

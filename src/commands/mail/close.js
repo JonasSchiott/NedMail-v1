@@ -36,7 +36,7 @@ module.exports = class extends Command {
             this.client.options.prefix
           }close cancel\` to abort.`;
         } else if (!duration) {
-          await this.client.tasks.get("close").run(thread);
+          return await this.client.tasks.get("close").run(thread);
         }
 
         return await message.sendMessage(response).catch(() => {});

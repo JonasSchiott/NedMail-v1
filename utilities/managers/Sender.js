@@ -1,7 +1,7 @@
 const Mail = require("./Mail");
 const { MESSAGES, COLORS } = require("@utils/Constants");
 const { TextChannel } = require("discord.js");
-const { KlasaUser } = require("klasa");
+const { KlasaUser, KlasaMessage } = require("klasa");
 
 module.exports = class Sender extends Mail {
   /**
@@ -60,8 +60,13 @@ module.exports = class Sender extends Mail {
    * Sends a message saying thread could not be created
    * @param {KlasaUser} user
    */
-  async sendRetryOverload(user = this.user) {
-    return await user.send(this.generateMessage(this.client.user, MESSAGES.RETRY_OVERLOAD, COLORS.RED)).catch(() => {});
+  async sendRetryOverload(msg, user = this.user) {
+    const embed = this.generateMessage(this.client.user, MESSAGES.RETRY_OVERLOAD, COLORS.RED);
+    if (msg instanceof KlasaMessage) {
+      return await msg.edit(embed).catch(() => {});
+    } else {
+      return await user.send(embed).catch(() => {});
+    }
   }
 
   /**

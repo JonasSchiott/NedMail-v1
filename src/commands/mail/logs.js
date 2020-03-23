@@ -1,5 +1,6 @@
-const { Command, Timestamp } = require("klasa");
+const { Command, Timestamp, RichDisplay } = require("klasa");
 const InboxManager = require("@managers/Inbox");
+const { arrayChunk } = require("@utils/Functions");
 
 module.exports = class extends Command {
   constructor(store, file, directory) {
@@ -23,26 +24,41 @@ module.exports = class extends Command {
     }
 
     const threads = Inbox.findAllUserThreads(target.id);
-    const embed = new this.client.Embed()
-      .setTitle(`Mail logs for ${target.tag}`)
-      .setThumbnail(target.displayAvatarURL())
-      .setDescription("No previous logs");
 
     if (threads.length) {
-      embed.setDescription(
-        threads
-          .sort((a, b) => b.createdAt - a.createdAt)
-          .map((x) =>
-            [
-              `\`${new Timestamp("(HH:mm): L").display(x.createdAt)}\`:`,
-              `Mail ID of **${x.id}**,`,
-              `and **${x.messages.length}** message${x.messages.length !== 1 ? "s" : ""}`
-            ].join(" ")
-          )
-          .join("\n")
-      );
-    }
+      const logs = threads
+        .sort((a, b) => b.createdAt - a.createdAt)
+        .map((x) =>
+          [
+            `\`${new Timestamp("(HH:mm): L").display(x.createdAt)}\`:`,
+            `Mail ID of **${x.id}**,`,
+            `and **${x.messages.length}** message${x.messages.length !== 1 ? "s" : ""}`
+          ].join(" ")
+        );
 
-    throw embed;
+      const pages = arrayChunk(logs, 8).map((x) =>
+        new this.client.Embed()
+          .setTitle(`[${threads.length}] Mail logs for ${target.tag}`)
+          .setThumbnail(target.displayAvatarURL())
+          .setDescription(x.join("\n"))
+      );
+
+      if (!pages.length) {
+        return message.sendEmbed({ description: "No logs found" }); // Unusual that this will happen
+      }
+
+      const paginator = new RichDisplay();
+      for (const page of pages) {
+        paginator.addPage(page);
+      }
+
+      const start = await message.sendMessage(pages[0]);
+
+      return await paginator.run(start, {
+        filter: (_, user) => user.id === message.author.id,
+        prompt: "What page would you like to jump to?",
+        time: 30000
+      });
+    }
   }
 };

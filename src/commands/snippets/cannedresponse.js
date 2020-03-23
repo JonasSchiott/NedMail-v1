@@ -6,6 +6,7 @@ module.exports = class extends Command {
       runIn: ["text"],
       aliases: ["cr"],
       description: "Sends a snippet to the user. If the first argument is 'anon', the mail is sent anonymously.",
+      extendedHelp: "No extended help.",
       usage: "<anon|anonymous|base:default> <snippet:snippet>",
       usageDelim: " "
     });

@@ -8,6 +8,7 @@ module.exports = class extends Command {
       runIn: ["text"],
       aliases: ["snip", "s"],
       description: "Manages the snippets used like commands with the bot.",
+      extendedHelp: "No extended help.",
       usage: "<create|delete|edit|info|view|list:default> [snippet:snippet] [changes:string] [...]",
       usageDelim: " "
     });
