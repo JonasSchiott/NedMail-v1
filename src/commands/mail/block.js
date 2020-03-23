@@ -21,11 +21,31 @@ module.exports = class extends Command {
   }
 
   async run(message, [users, duration]) {
+    const Inbox = new (require("@managers/Inbox"))(this.client.user);
+
     for (const user of users) {
       await user.settings.update("blocked", true);
 
       if (duration) {
-        this.client.schedule.create("unblock", duration, { id: `block_${user.id}`, data: { user: user.id } });
+        this.client.schedule.create("unblock", duration, {
+          id: `block_${user.id}`,
+          data: { user: { id: user.id }, author: { tag: message.author.tag, id: message.author.id } }
+        });
+      }
+
+      if (Inbox.actionAudit) {
+        Inbox.actionAudit.send(
+          new this.client.Embed()
+            .setTitle("User Blocked")
+            .setDescription(
+              [
+                `**User:** ${user.tag} (${user.id})`,
+                `**Responder:** ${message.author.tag} (${message.author.id})`,
+                `**Duration:** ${duration ? convertMS(duration - message.createdAt).string : "indefinate"}`
+              ].join("\n")
+            )
+            .red()
+        );
       }
     }
 
