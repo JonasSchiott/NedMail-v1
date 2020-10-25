@@ -15,7 +15,7 @@
 </a>
 
 <a href="https://github.com/T3NED/NedMail">
-    <img src="https://img.shields.io/github/languages/top/T3NED/NedMail?logo=javascript&color=yellow&logoColor=yellow&style=for-the-badge" alt="Languages">
+    <img src="https://img.shields.io/github/languages/top/T3NED/NedMail?logo=typescript&color=white&logoColor=lightblue&style=for-the-badge" alt="Languages">
 </a>
 <br>
 <a href="https://github.com/T3NED/NedMail">
